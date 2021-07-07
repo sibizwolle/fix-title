@@ -12,6 +12,7 @@
     },
     "scripts": {
         "test": "node tests/index.js",
-        "lint": "eslint --fix add-jira-ticket-to-pr.js tests/ lib/"
+        "lint": "eslint --fix add-jira-ticket-to-pr.js tests/ lib/",
+        "postinstall": "pre-commit install || true"
     }
 }
