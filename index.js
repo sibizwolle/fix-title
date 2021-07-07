@@ -43,13 +43,16 @@ try {
             return;
         }
 
+        // Throw a warning if the title is empty now
         if (properTitle.length === 0) {
             core.warning(`Could not compute a proper title from current PR title “${currentTitle}”`);
             return;
         }
 
+        // Report empty
         core.info(`Updating PR title to “${properTitle}”...`);
 
+        // Send update to GitHub
         return octokit.rest.pulls.update(Object.assign(prQuery, {
             title: properTitle,
         }));
