@@ -1,10 +1,11 @@
+const { describe } = require('mocha');
 const testComputeProperTitle = require('./test-compute-proper-title');
 const testFindIssueInBranch = require('./test-find-issue-in-branch');
 
-console.group('Issue detection');
-testFindIssueInBranch();
-console.groupEnd();
+describe('Issue detection', () => {
+    testFindIssueInBranch();
+});
 
-console.group('Title compution');
-testComputeProperTitle();
-console.groupEnd();
+describe('Title compution', () => {
+    testComputeProperTitle();
+});

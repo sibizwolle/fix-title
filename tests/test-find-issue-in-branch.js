@@ -1,3 +1,5 @@
+const { assert } = require('chai');
+const { it } = require('mocha');
 const findIssueInBranch = require('../lib/find-issue');
 
 const testCases = [
@@ -7,14 +9,8 @@ const testCases = [
     ['zero-004', 'ZERO-4'],
 ];
 
-module.exports = () => {
-    testCases.forEach(([input, expected]) => {
-        const result = findIssueInBranch(input);
-        if (result === expected) {
-            console.log('Got expected %o from %o', expected, input);
-            return;
-        }
-
-        console.error('Got unexpected result %o from %o, expected %o', result, input, expected);
+testCases.forEach(([input, expected]) => {
+    it(`should return ${expected} with title ${input}`, () => {
+        assert.equal(expected, findIssueInBranch(input));
     });
-};
+});
