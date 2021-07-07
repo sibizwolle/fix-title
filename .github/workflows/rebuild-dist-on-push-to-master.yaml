@@ -38,3 +38,4 @@ jobs:
           commit_message: 'Compiled action using GitHub Actions'
           file_pattern: 'dist/'
           add_options: '-f'
+          skip_dirty_check: true
