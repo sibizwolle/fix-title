@@ -1,0 +1,19 @@
+
+name: Clean up PR title
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+
+jobs:
+  fix-titels:
+    name: Clean up PR titles
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update PR title
+        uses: motivozwolle/fix-title@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
