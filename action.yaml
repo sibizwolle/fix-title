@@ -16,7 +16,7 @@ inputs:
 
 runs:
   using: 'node12'
-  main: 'add-jira-ticket-to-pr.js'
+  main: 'dist/index.js'
 
 branding:
   icon: edit-2

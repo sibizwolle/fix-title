@@ -5,6 +5,7 @@
         "@actions/github": "^5.0.0"
     },
     "devDependencies": {
+        "@vercel/ncc": "^0.28.6",
         "eslint": "^7.28.0",
         "eslint-config-airbnb-base": "^14.2.1",
         "eslint-import-resolver-webpack": "^0.13.1",
@@ -13,6 +14,7 @@
     "scripts": {
         "test": "node tests/index.js",
         "lint": "eslint --fix add-jira-ticket-to-pr.js tests/ lib/",
-        "postinstall": "pre-commit install || true"
+        "postinstall": "pre-commit install || true",
+        "build": "ncc build index.js --license licenses.txt"
     }
 }
