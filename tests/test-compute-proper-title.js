@@ -1,5 +1,5 @@
-const { assert } = require('chai');
-const { it } = require('mocha');
+const assert = require('assert');
+const { it, describe } = require('mocha');
 const computePrTitle = require('../lib/compute-proper-title');
 
 const testCases = [
@@ -45,8 +45,10 @@ module.exports = () => {
     testCases.forEach(({
         expected, branch, title, ticketNumber,
     }) => {
-        it(`should return ${expected} with title ${title}, branch ${branch} and ticketnumber ${ticketNumber}`, () => {
-            assert.equal(expected, computePrTitle(branch, title, ticketNumber));
+        describe(`with title ${title}, branch ${branch} and ticketnumber ${ticketNumber}`, () => {
+            it(`should return ${expected}`, () => {
+                assert.equal(expected, computePrTitle(branch, title, ticketNumber));
+            });
         });
     });
 };
