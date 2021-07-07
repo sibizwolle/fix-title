@@ -57,7 +57,7 @@ const computePrTitle = (branch, title, ticketNumber) => {
     newTitle = newTitle.replace(/(\s+|^)([a-z])/g, (matches) => matches.toUpperCase());
 
     // Don't tweak further if no ticketNumber is set
-    if (! ticketNumber) {
+    if (!ticketNumber) {
         return newTitle;
     }
 
@@ -6439,7 +6439,7 @@ try {
         core.info(`Updating PR title to “${properTitle}”...`);
 
         // Send update to GitHub
-        return octokit.rest.pulls.update(Object.assign(prQuery, {
+        octokit.rest.pulls.update(Object.assign(prQuery, {
             title: properTitle,
         }));
     });
