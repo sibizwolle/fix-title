@@ -41,10 +41,12 @@ const testCases = [
     },
 ];
 
-testCases.forEach(({
-    expected, branch, title, ticketNumber,
-}) => {
-    it(`should return ${expected} with title ${title}, branch ${branch} and ticketnumber ${ticketNumber}`, () => {
-        assert.equal(expected, computePrTitle(branch, title, ticketNumber));
+module.exports = () => {
+    testCases.forEach(({
+        expected, branch, title, ticketNumber,
+    }) => {
+        it(`should return ${expected} with title ${title}, branch ${branch} and ticketnumber ${ticketNumber}`, () => {
+            assert.equal(expected, computePrTitle(branch, title, ticketNumber));
+        });
     });
-});
+};

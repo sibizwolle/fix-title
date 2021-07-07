@@ -9,8 +9,10 @@ const testCases = [
     ['zero-004', 'ZERO-4'],
 ];
 
-testCases.forEach(([input, expected]) => {
-    it(`should return ${expected} with title ${input}`, () => {
-        assert.equal(expected, findIssueInBranch(input));
+module.exports = () => {
+    testCases.forEach(([input, expected]) => {
+        it(`should return ${expected} with title ${input}`, () => {
+            assert.equal(expected, findIssueInBranch(input));
+        });
     });
-});
+};

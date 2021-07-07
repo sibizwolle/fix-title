@@ -53,7 +53,7 @@ try {
         core.info(`Updating PR title to “${properTitle}”...`);
 
         // Send update to GitHub
-        return octokit.rest.pulls.update(Object.assign(prQuery, {
+        octokit.rest.pulls.update(Object.assign(prQuery, {
             title: properTitle,
         }));
     });
