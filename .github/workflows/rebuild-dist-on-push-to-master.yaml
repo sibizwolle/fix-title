@@ -1,0 +1,40 @@
+name: Compile action
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - index.js
+      - package.json
+      - lib/
+
+jobs:
+  build-with-ncs:
+    name: Build action with ncc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build action
+        run: |
+          rm -rf dist/
+          npm run build
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Compiled action using GitHub Actions'
+          file_pattern: 'dist/'
+          add_options: '-f'
