@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Test output
+        run: npm run test
+
       - name: Build action
         run: |
           rm -rf dist/

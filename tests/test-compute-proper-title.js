@@ -1,3 +1,5 @@
+const assert = require('assert');
+const { it, describe } = require('mocha');
 const computePrTitle = require('../lib/compute-proper-title');
 
 const testCases = [
@@ -43,12 +45,10 @@ module.exports = () => {
     testCases.forEach(({
         expected, branch, title, ticketNumber,
     }) => {
-        const result = computePrTitle(branch, title, ticketNumber);
-        if (result === expected) {
-            console.log('Got expected %o from %o on %o', expected, title, branch);
-            return;
-        }
-
-        console.error('Got unexpected result %o from %o, expected %o', result, { branch, title, ticketNumber }, expected);
+        describe(`with title ${title}, branch ${branch} and ticketnumber ${ticketNumber}`, () => {
+            it(`should return ${expected}`, () => {
+                assert.equal(expected, computePrTitle(branch, title, ticketNumber));
+            });
+        });
     });
 };

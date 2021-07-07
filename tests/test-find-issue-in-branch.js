@@ -1,3 +1,5 @@
+const assert = require('assert');
+const { it, describe } = require('mocha');
 const findIssueInBranch = require('../lib/find-issue');
 
 const testCases = [
@@ -9,12 +11,10 @@ const testCases = [
 
 module.exports = () => {
     testCases.forEach(([input, expected]) => {
-        const result = findIssueInBranch(input);
-        if (result === expected) {
-            console.log('Got expected %o from %o', expected, input);
-            return;
-        }
-
-        console.error('Got unexpected result %o from %o, expected %o', result, input, expected);
+        describe(`with ${input}`, () => {
+            it(`should return ${expected}`, () => {
+                assert.equal(expected, findIssueInBranch(input));
+            });
+        });
     });
 };
