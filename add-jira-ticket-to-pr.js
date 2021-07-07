@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const { default: computePrTitle } = require('./lib/compute-proper-title');
-const { default: findIssueInBranch } = require('./lib/find-issue');
+const computePrTitle = require('./lib/compute-proper-title');
+const findIssueInBranch = require('./lib/find-issue');
 
 try {
     // Find token from request
