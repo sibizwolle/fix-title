@@ -1,0 +1,25 @@
+name: Test code
+
+on:
+  pull_request:
+
+jobs:
+  run-tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test output
+        run: npm run test
