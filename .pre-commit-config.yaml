@@ -21,7 +21,7 @@ repos:
         entry: './node_modules/.bin/eslint --fix'
         files: resources/js/.*\.(js)$
 
-  - repo: https://github.com/motivozwolle/pre-commit-hooks
+  - repo: https://github.com/sibizwolle/pre-commit-hooks
     rev: v1.0.2
     hooks:
       - id: add-ticket-to-commit

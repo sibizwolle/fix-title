@@ -1,14 +1,13 @@
-# Fix PR titles
+# Update PR
 
-This action fixes titles of Pull Requests, by performing a few actions:
+This action updates Pull Requests, by performing a few actions:
 
  - Determine project from branch name (`proj-22`, `feature/proj-22`, `feature/proj-22-steve` and alike)
  - Remove any duplicate occurances of the project code from the title
  - Remove prefixes like `Feature/` auto-created by GitHub sometimes
  - Convert title to Title Case (`My pull request` → `My Pull Request`)
  - Prefix the project code in brackets (`[PROJ-22]`)
-
-If the only changes are casing, no changes are made.
+ - If a label exists with the prefix, it adds the label to the PR.
 
 ## Installation
 
@@ -17,7 +16,7 @@ To add it to your project, create a new workflow that triggers on PR creation an
 For example, this could look like this:
 
 ```yaml
-name: Clean up PR title
+name: Update PR details
 
 on:
   pull_request:
@@ -26,13 +25,14 @@ on:
       - edited
 
 jobs:
-  fix-titels:
-    name: Clean up PR titles
+  fix-pr:
+    name: Update PR details
     runs-on: ubuntu-latest
 
     steps:
-      - name: Update PR title
-        uses: motivozwolle/fix-title@master
+      - name: Update PR
+        uses: sibizwolle/fix-title@master
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }},
+          label: true
 

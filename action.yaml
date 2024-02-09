@@ -1,6 +1,6 @@
 name: Clean up PR title
 
-author: Motivo B.V.
+author: Sibi B.V.
 
 description: |
   Cleans up pull requests titles and adds Jira ticket numbers
@@ -13,9 +13,13 @@ inputs:
     description: Ticket number to override
     required: false
     default: ''
+  label:
+    description: Defines if the PR should be labeled
+    required: false
+    default: true
 
 runs:
-  using: 'node12'
+  using: 'node20'
   main: 'dist/index.js'
 
 branding:
