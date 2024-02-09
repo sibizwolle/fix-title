@@ -1,6 +1,6 @@
 name: Clean up PR title
 
-author: Motivo B.V.
+author: Sibi B.V.
 
 description: |
   Cleans up pull requests titles and adds Jira ticket numbers

@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Update PR title
-        uses: motivozwolle/fix-title@master
+        uses: sibizwolle/fix-title@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
