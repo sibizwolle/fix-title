@@ -30954,7 +30954,7 @@ __nccwpck_require__.r(__webpack_exports__);
 
 
 async function updatePrTitle() {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Processing PR...");
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start processing PR...");
 
     try {
         // Find token from request
