@@ -4,7 +4,7 @@ import computePrTitle from "./lib/compute-proper-title";
 import findIssueInBranch from "./lib/find-issue";
 
 async function updatePrTitle() {
-    startGroup("Processing PR...");
+    startGroup("Start processing PR...");
 
     try {
         // Find token from request
