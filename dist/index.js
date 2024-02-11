@@ -31014,6 +31014,14 @@ async function updatePrTitle() {
             title: properTitle,
         });
 
+        const assignDefaultLabel = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getBooleanInput)("label", { required: false });
+
+        if (! assignDefaultLabel) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Skip labeling PR`);
+
+            return;
+        }
+
         // Assign label to PR
         const labels = await octokit.rest.issues.listLabelsForRepo({
             owner: prQuery.owner,
