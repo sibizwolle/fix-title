@@ -56,6 +56,27 @@ try {
         octokit.rest.pulls.update(Object.assign(prQuery, {
             title: properTitle,
         }));
+
+        // Assign label to PR
+        octokit.rest.issues.listLabelsForRepo({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+        }).then((labels) => {
+            // Find label that starts with the project name
+            const matchingLabelWithTicket = labels.data.find((label) =>
+                label.name.startsWith(ticketNumber.split("-")[0])
+            );
+
+            // Add label to PR if found
+            if (matchingLabelWithTicket) {
+                octokit.rest.issues.addLabels({
+                    owner: github.context.repo.owner,
+                    repo: github.context.repo.repo,
+                    issue_number: github.context.issue.number,
+                    labels: [matchingLabelWithTicket.name],
+                });
+            }
+        });
     });
 } catch (error) {
     core.setFailed(error.message);
