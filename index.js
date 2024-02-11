@@ -1,4 +1,4 @@
-import { info, getInput, warning, setFailed, startGroup, endGroup } from "@actions/core";
+import { info, getInput, getBooleanInput, warning, setFailed, startGroup, endGroup } from "@actions/core";
 import { getOctokit, context } from "@actions/github";
 import computePrTitle from "./lib/compute-proper-title";
 import findIssueInBranch from "./lib/find-issue";
@@ -63,6 +63,14 @@ async function updatePrTitle() {
             ...prQuery,
             title: properTitle,
         });
+
+        const assignDefaultLabel = getBooleanInput("label", { required: false });
+
+        if (! assignDefaultLabel) {
+            info(`Skip labeling PR`);
+
+            return;
+        }
 
         // Assign label to PR
         const labels = await octokit.rest.issues.listLabelsForRepo({
