@@ -30890,105 +30890,162 @@ module.exports = parseParams
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
-const core = __nccwpck_require__(2186);
-const github = __nccwpck_require__(5438);
-const computePrTitle = __nccwpck_require__(7696);
-const findIssueInBranch = __nccwpck_require__(3657);
+"use strict";
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7696);
+/* harmony import */ var _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _lib_find_issue__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(3657);
+/* harmony import */ var _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_lib_find_issue__WEBPACK_IMPORTED_MODULE_3__);
 
-core.info(`Starting action...`);
 
-try {
-    // Find token from request
-    const token = core.getInput('token', { required: true });
-    const octokit = github.getOctokit(token);
 
-    // Find input ticket, if any
-    const inputTicket = core.getInput('ticket-number', { required: false });
 
-    // Prepare reusable query
-    const prQuery = {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        pull_number: github.context.issue.number,
-    };
 
-    // Fetch PR
-    octokit.rest.pulls.get(prQuery).then((pullRequest) => {
+async function updatePrTitle() {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Processing PR...");
+
+    try {
+        // Find token from request
+        const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("token", { required: true });
+        const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
+
+        // Find input ticket, if any
+        const inputTicket = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("ticket-number", { required: false });
+
+        // Prepare reusable query
+        const prQuery = {
+            owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+            repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+            pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+        };
+
+        // Fetch PR
+        const pullRequest = await octokit.rest.pulls.get(prQuery);
+
         // Determine the ticket number from the input, the branch or the title
-        const ticketNumber = inputTicket
-            || findIssueInBranch(pullRequest.data.head.ref)
-            || findIssueInBranch(pullRequest.data.title);
+        const ticketNumber = inputTicket ||
+            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.head.ref) ||
+            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.title);
 
-        core.info(`Ticket number ”${ticketNumber}” found.`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Ticket number "${ticketNumber}" found.`);
 
         // Get the current title as shorthand for comparison
         const prHeadRef = pullRequest.data.head.ref;
         const currentTitle = String(pullRequest.data.title);
 
         if (currentTitle.trim().length === 0) {
-            core.info('Title is empty, not continuing');
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)("Title is empty, not continuing");
             return;
         }
 
         // Let the system compute the right title
-        const properTitle = computePrTitle(prHeadRef, currentTitle, ticketNumber);
+        const properTitle = _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default()(prHeadRef, currentTitle, ticketNumber);
 
         // Check if the titles are identical
         if (properTitle.toLocaleLowerCase() === currentTitle.toLocaleLowerCase()) {
-            core.info(`PR title “${currentTitle}” is already clean, not updating.`);
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`PR title “${currentTitle}” is already clean, not updating.`);
             return;
         }
 
         // Throw a warning if the title is empty now
         if (properTitle.length === 0) {
-            core.warning(`Could not compute a proper title from current PR title “${currentTitle}”`);
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.warning)(`Could not compute a proper title from current PR title “${currentTitle}”`);
             return;
         }
 
         // Report empty
-        core.info(`Updating PR title to “${properTitle}”...`);
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Updating PR title to “${properTitle}”...`);
 
         // Send update to GitHub
-        octokit.rest.pulls.update(Object.assign(prQuery, {
+        await octokit.rest.pulls.update({
+            ...prQuery,
             title: properTitle,
-        }));
+        });
 
         // Assign label to PR
-        octokit.rest.issues.listLabelsForRepo({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-        }).then((labels) => {
-            // Find label that starts with the project name
-            const matchingLabelWithTicket = labels.data.find((label) =>
-                label.name.startsWith(ticketNumber.split("-")[0])
-            );
-
-            core.info(`${labels.data.length} labels found.`);
-
-            // Add label to PR if found
-            if (matchingLabelWithTicket) {
-                core.info(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
-
-                octokit.rest.issues.addLabels({
-                    owner: github.context.repo.owner,
-                    repo: github.context.repo.repo,
-                    issue_number: github.context.issue.number,
-                    labels: [matchingLabelWithTicket.name],
-                });
-            }
+        const labels = await octokit.rest.issues.listLabelsForRepo({
+            owner: prQuery.owner,
+            repo: prQuery.repo,
         });
-    });
-} catch (error) {
-    core.setFailed(error.message);
+
+        // Find label that starts with the project name
+        const matchingLabelWithTicket = labels.data.find((label) =>
+            label.name.startsWith(ticketNumber.split("-")[0])
+        );
+
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`${labels.data.length} labels found.`);
+
+        // Add label to PR if found
+        if (matchingLabelWithTicket) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
+
+            await octokit.rest.issues.addLabels({
+                owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+                repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+                issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+                labels: [matchingLabelWithTicket.name],
+            });
+        }
+    } catch (error) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed)(error.message);
+    }
+
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
 }
+
+updatePrTitle();
 
 })();
 
