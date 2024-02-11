@@ -3,6 +3,8 @@ const github = require('@actions/github');
 const computePrTitle = require('./lib/compute-proper-title');
 const findIssueInBranch = require('./lib/find-issue');
 
+core.info(`Starting action...`);
+
 try {
     // Find token from request
     const token = core.getInput('token', { required: true });
@@ -24,6 +26,8 @@ try {
         const ticketNumber = inputTicket
             || findIssueInBranch(pullRequest.data.head.ref)
             || findIssueInBranch(pullRequest.data.title);
+
+        core.info(`Ticket number ”${ticketNumber}” found.`);
 
         // Get the current title as shorthand for comparison
         const prHeadRef = pullRequest.data.head.ref;
@@ -67,8 +71,12 @@ try {
                 label.name.startsWith(ticketNumber.split("-")[0])
             );
 
+            core.info(`${labels.data.length} labels found.`);
+
             // Add label to PR if found
             if (matchingLabelWithTicket) {
+                core.info(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
+
                 octokit.rest.issues.addLabels({
                     owner: github.context.repo.owner,
                     repo: github.context.repo.repo,
