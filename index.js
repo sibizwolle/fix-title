@@ -1,40 +1,42 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const computePrTitle = require('./lib/compute-proper-title');
-const findIssueInBranch = require('./lib/find-issue');
+import { info, getInput, warning, setFailed, startGroup, endGroup } from "@actions/core";
+import { getOctokit, context } from "@actions/github";
+import computePrTitle from "./lib/compute-proper-title";
+import findIssueInBranch from "./lib/find-issue";
 
-core.info(`Starting action...`);
+async function updatePrTitle() {
+    startGroup("Processing PR...");
 
-try {
-    // Find token from request
-    const token = core.getInput('token', { required: true });
-    const octokit = github.getOctokit(token);
+    try {
+        // Find token from request
+        const token = getInput("token", { required: true });
+        const octokit = getOctokit(token);
 
-    // Find input ticket, if any
-    const inputTicket = core.getInput('ticket-number', { required: false });
+        // Find input ticket, if any
+        const inputTicket = getInput("ticket-number", { required: false });
 
-    // Prepare reusable query
-    const prQuery = {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        pull_number: github.context.issue.number,
-    };
+        // Prepare reusable query
+        const prQuery = {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+        };
 
-    // Fetch PR
-    octokit.rest.pulls.get(prQuery).then((pullRequest) => {
+        // Fetch PR
+        const pullRequest = await octokit.rest.pulls.get(prQuery);
+
         // Determine the ticket number from the input, the branch or the title
-        const ticketNumber = inputTicket
-            || findIssueInBranch(pullRequest.data.head.ref)
-            || findIssueInBranch(pullRequest.data.title);
+        const ticketNumber = inputTicket ||
+            findIssueInBranch(pullRequest.data.head.ref) ||
+            findIssueInBranch(pullRequest.data.title);
 
-        core.info(`Ticket number ”${ticketNumber}” found.`);
+        info(`Ticket number "${ticketNumber}" found.`);
 
         // Get the current title as shorthand for comparison
         const prHeadRef = pullRequest.data.head.ref;
         const currentTitle = String(pullRequest.data.title);
 
         if (currentTitle.trim().length === 0) {
-            core.info('Title is empty, not continuing');
+            info("Title is empty, not continuing");
             return;
         }
 
@@ -43,49 +45,54 @@ try {
 
         // Check if the titles are identical
         if (properTitle.toLocaleLowerCase() === currentTitle.toLocaleLowerCase()) {
-            core.info(`PR title “${currentTitle}” is already clean, not updating.`);
+            info(`PR title “${currentTitle}” is already clean, not updating.`);
             return;
         }
 
         // Throw a warning if the title is empty now
         if (properTitle.length === 0) {
-            core.warning(`Could not compute a proper title from current PR title “${currentTitle}”`);
+            warning(`Could not compute a proper title from current PR title “${currentTitle}”`);
             return;
         }
 
         // Report empty
-        core.info(`Updating PR title to “${properTitle}”...`);
+        info(`Updating PR title to “${properTitle}”...`);
 
         // Send update to GitHub
-        octokit.rest.pulls.update(Object.assign(prQuery, {
+        await octokit.rest.pulls.update({
+            ...prQuery,
             title: properTitle,
-        }));
+        });
 
         // Assign label to PR
-        octokit.rest.issues.listLabelsForRepo({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-        }).then((labels) => {
-            // Find label that starts with the project name
-            const matchingLabelWithTicket = labels.data.find((label) =>
-                label.name.startsWith(ticketNumber.split("-")[0])
-            );
-
-            core.info(`${labels.data.length} labels found.`);
-
-            // Add label to PR if found
-            if (matchingLabelWithTicket) {
-                core.info(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
-
-                octokit.rest.issues.addLabels({
-                    owner: github.context.repo.owner,
-                    repo: github.context.repo.repo,
-                    issue_number: github.context.issue.number,
-                    labels: [matchingLabelWithTicket.name],
-                });
-            }
+        const labels = await octokit.rest.issues.listLabelsForRepo({
+            owner: prQuery.owner,
+            repo: prQuery.repo,
         });
-    });
-} catch (error) {
-    core.setFailed(error.message);
+
+        // Find label that starts with the project name
+        const matchingLabelWithTicket = labels.data.find((label) =>
+            label.name.startsWith(ticketNumber.split("-")[0])
+        );
+
+        info(`${labels.data.length} labels found.`);
+
+        // Add label to PR if found
+        if (matchingLabelWithTicket) {
+            info(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
+
+            await octokit.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: [matchingLabelWithTicket.name],
+            });
+        }
+    } catch (error) {
+        setFailed(error.message);
+    }
+
+    endGroup();
 }
+
+updatePrTitle();
