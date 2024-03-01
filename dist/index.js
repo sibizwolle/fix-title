@@ -30953,33 +30953,28 @@ __nccwpck_require__.r(__webpack_exports__);
 
 
 
+// Find token from request
+const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("token", { required: true });
+const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
+
+// Prepare reusable query
+const prQuery = {
+    owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+    repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+    pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+};
+
+let ticketNumber = null;
+
 async function updatePrTitle() {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start processing PR...");
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start updating PR title...");
 
     try {
-        // Find token from request
-        const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("token", { required: true });
-        const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
-
         // Find input ticket, if any
         const inputTicket = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("ticket-number", { required: false });
 
-        // Prepare reusable query
-        const prQuery = {
-            owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
-            repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-            pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
-        };
-
         // Fetch PR
         const pullRequest = await octokit.rest.pulls.get(prQuery);
-
-        // Determine the ticket number from the input, the branch or the title
-        const ticketNumber = inputTicket ||
-            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.head.ref) ||
-            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.title);
-
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Ticket number "${ticketNumber}" found.`);
 
         // Get the current title as shorthand for comparison
         const prHeadRef = pullRequest.data.head.ref;
@@ -30989,6 +30984,13 @@ async function updatePrTitle() {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)("Title is empty, not continuing");
             return;
         }
+
+        // Determine the ticket number from the input, the branch or the title
+        ticketNumber = inputTicket ||
+            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.head.ref) ||
+            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.title);
+
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Ticket number: "${ticketNumber}"`);
 
         // Let the system compute the right title
         const properTitle = _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default()(prHeadRef, currentTitle, ticketNumber);
@@ -31013,16 +31015,30 @@ async function updatePrTitle() {
             ...prQuery,
             title: properTitle,
         });
+    } catch (error) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed)(error.message);
+    }
 
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
+}
+
+async function updatePrLabels() {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start updating Labels on PR...");
         const assignDefaultLabel = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("label", { required: false });
 
-        if (assignDefaultLabel == 'false') {
+        if (assignDefaultLabel == "false") {
             (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Skip labeling PR`);
 
             return;
         }
 
-        // Assign label to PR
+        if (!ticketNumber) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`No ticket number found, don't label PR`);
+
+            return;
+        }
+
+        // Fetch labels
         const labels = await octokit.rest.issues.listLabelsForRepo({
             owner: prQuery.owner,
             repo: prQuery.repo,
@@ -31046,15 +31062,12 @@ async function updatePrTitle() {
                 labels: [matchingLabelWithTicket.name],
             });
         }
-    } catch (error) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed)(error.message);
-    }
 
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
 }
 
 updatePrTitle();
-
+updatePrLabels();
 })();
 
 module.exports = __webpack_exports__;
