@@ -116,5 +116,5 @@ async function updatePrLabels() {
     endGroup();
 }
 
-updatePrTitle();
-updatePrLabels();
+await updatePrTitle();
+await updatePrLabels();
