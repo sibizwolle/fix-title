@@ -1,6 +1,145 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 2932:
+/***/ ((module, __webpack_exports__, __nccwpck_require__) => {
+
+"use strict";
+__nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
+__nccwpck_require__.r(__webpack_exports__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5438);
+/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7696);
+/* harmony import */ var _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _lib_find_issue__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(3657);
+/* harmony import */ var _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_lib_find_issue__WEBPACK_IMPORTED_MODULE_3__);
+
+
+
+
+
+// Find token from request
+const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("token", { required: true });
+const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
+
+// Prepare reusable query
+const prQuery = {
+    owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+    repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+    pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+};
+
+let ticketNumber = null;
+
+async function updatePrTitle() {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start updating PR title...");
+
+    try {
+        // Find input ticket, if any
+        const inputTicket = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("ticket-number", { required: false });
+
+        // Fetch PR
+        const pullRequest = await octokit.rest.pulls.get(prQuery);
+
+        // Get the current title as shorthand for comparison
+        const prHeadRef = pullRequest.data.head.ref;
+        const currentTitle = String(pullRequest.data.title);
+
+        if (currentTitle.trim().length === 0) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)("Title is empty, not continuing");
+            return;
+        }
+
+        // Determine the ticket number from the input, the branch or the title
+        ticketNumber = inputTicket ||
+            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.head.ref) ||
+            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.title);
+
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Ticket number: "${ticketNumber}"`);
+
+        // Let the system compute the right title
+        const properTitle = _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default()(prHeadRef, currentTitle, ticketNumber);
+
+        // Check if the titles are identical
+        if (properTitle.toLocaleLowerCase() === currentTitle.toLocaleLowerCase()) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`PR title “${currentTitle}” is already clean, not updating.`);
+            return;
+        }
+
+        // Throw a warning if the title is empty now
+        if (properTitle.length === 0) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.warning)(`Could not compute a proper title from current PR title “${currentTitle}”`);
+            return;
+        }
+
+        // Report empty
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Updating PR title to “${properTitle}”...`);
+
+        // Send update to GitHub
+        await octokit.rest.pulls.update({
+            ...prQuery,
+            title: properTitle,
+        });
+    } catch (error) {
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed)(error.message);
+    }
+
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
+}
+
+async function updatePrLabels() {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start updating Labels on PR...");
+        const assignDefaultLabel = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("label", { required: false });
+
+        if (assignDefaultLabel == "false") {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Skip labeling PR`);
+
+            return;
+        }
+
+        if (!ticketNumber) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`No ticket number found, don't label PR`);
+
+            return;
+        }
+
+        // Fetch labels
+        const labels = await octokit.rest.issues.listLabelsForRepo({
+            owner: prQuery.owner,
+            repo: prQuery.repo,
+        });
+
+        // Find label that starts with the project name
+        const matchingLabelWithTicket = labels.data.find((label) =>
+            label.name.startsWith(ticketNumber.split("-")[0])
+        );
+
+        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`${labels.data.length} labels found.`);
+
+        // Add label to PR if found
+        if (matchingLabelWithTicket) {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
+
+            await octokit.rest.issues.addLabels({
+                owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+                repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
+                issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
+                labels: [matchingLabelWithTicket.name],
+            });
+        }
+
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
+}
+
+await updatePrTitle();
+await updatePrLabels();
+__webpack_async_result__();
+} catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ }),
+
 /***/ 7696:
 /***/ ((module) => {
 
@@ -30890,6 +31029,75 @@ module.exports = parseParams
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/async module */
+/******/ 	(() => {
+/******/ 		var webpackQueues = typeof Symbol === "function" ? Symbol("webpack queues") : "__webpack_queues__";
+/******/ 		var webpackExports = typeof Symbol === "function" ? Symbol("webpack exports") : "__webpack_exports__";
+/******/ 		var webpackError = typeof Symbol === "function" ? Symbol("webpack error") : "__webpack_error__";
+/******/ 		var resolveQueue = (queue) => {
+/******/ 			if(queue && !queue.d) {
+/******/ 				queue.d = 1;
+/******/ 				queue.forEach((fn) => (fn.r--));
+/******/ 				queue.forEach((fn) => (fn.r-- ? fn.r++ : fn()));
+/******/ 			}
+/******/ 		}
+/******/ 		var wrapDeps = (deps) => (deps.map((dep) => {
+/******/ 			if(dep !== null && typeof dep === "object") {
+/******/ 				if(dep[webpackQueues]) return dep;
+/******/ 				if(dep.then) {
+/******/ 					var queue = [];
+/******/ 					queue.d = 0;
+/******/ 					dep.then((r) => {
+/******/ 						obj[webpackExports] = r;
+/******/ 						resolveQueue(queue);
+/******/ 					}, (e) => {
+/******/ 						obj[webpackError] = e;
+/******/ 						resolveQueue(queue);
+/******/ 					});
+/******/ 					var obj = {};
+/******/ 					obj[webpackQueues] = (fn) => (fn(queue));
+/******/ 					return obj;
+/******/ 				}
+/******/ 			}
+/******/ 			var ret = {};
+/******/ 			ret[webpackQueues] = x => {};
+/******/ 			ret[webpackExports] = dep;
+/******/ 			return ret;
+/******/ 		}));
+/******/ 		__nccwpck_require__.a = (module, body, hasAwait) => {
+/******/ 			var queue;
+/******/ 			hasAwait && ((queue = []).d = 1);
+/******/ 			var depQueues = new Set();
+/******/ 			var exports = module.exports;
+/******/ 			var currentDeps;
+/******/ 			var outerResolve;
+/******/ 			var reject;
+/******/ 			var promise = new Promise((resolve, rej) => {
+/******/ 				reject = rej;
+/******/ 				outerResolve = resolve;
+/******/ 			});
+/******/ 			promise[webpackExports] = exports;
+/******/ 			promise[webpackQueues] = (fn) => (queue && fn(queue), depQueues.forEach(fn), promise["catch"](x => {}));
+/******/ 			module.exports = promise;
+/******/ 			body((deps) => {
+/******/ 				currentDeps = wrapDeps(deps);
+/******/ 				var fn;
+/******/ 				var getResult = () => (currentDeps.map((d) => {
+/******/ 					if(d[webpackError]) throw d[webpackError];
+/******/ 					return d[webpackExports];
+/******/ 				}))
+/******/ 				var promise = new Promise((resolve) => {
+/******/ 					fn = () => (resolve(getResult));
+/******/ 					fn.r = 0;
+/******/ 					var fnQueue = (q) => (q !== queue && !depQueues.has(q) && (depQueues.add(q), q && !q.d && (fn.r++, q.push(fn))));
+/******/ 					currentDeps.map((dep) => (dep[webpackQueues](fnQueue)));
+/******/ 				});
+/******/ 				return fn.r ? promise : getResult();
+/******/ 			}, (err) => ((err ? reject(promise[webpackError] = err) : outerResolve(exports)), resolveQueue(queue)));
+/******/ 			queue && (queue.d = 0);
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
@@ -30935,141 +31143,12 @@ module.exports = parseParams
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5438);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7696);
-/* harmony import */ var _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(_lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _lib_find_issue__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(3657);
-/* harmony import */ var _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(_lib_find_issue__WEBPACK_IMPORTED_MODULE_3__);
-
-
-
-
-
-// Find token from request
-const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("token", { required: true });
-const octokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
-
-// Prepare reusable query
-const prQuery = {
-    owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
-    repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-    pull_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
-};
-
-let ticketNumber = null;
-
-async function updatePrTitle() {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start updating PR title...");
-
-    try {
-        // Find input ticket, if any
-        const inputTicket = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("ticket-number", { required: false });
-
-        // Fetch PR
-        const pullRequest = await octokit.rest.pulls.get(prQuery);
-
-        // Get the current title as shorthand for comparison
-        const prHeadRef = pullRequest.data.head.ref;
-        const currentTitle = String(pullRequest.data.title);
-
-        if (currentTitle.trim().length === 0) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)("Title is empty, not continuing");
-            return;
-        }
-
-        // Determine the ticket number from the input, the branch or the title
-        ticketNumber = inputTicket ||
-            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.head.ref) ||
-            _lib_find_issue__WEBPACK_IMPORTED_MODULE_3___default()(pullRequest.data.title);
-
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Ticket number: "${ticketNumber}"`);
-
-        // Let the system compute the right title
-        const properTitle = _lib_compute_proper_title__WEBPACK_IMPORTED_MODULE_2___default()(prHeadRef, currentTitle, ticketNumber);
-
-        // Check if the titles are identical
-        if (properTitle.toLocaleLowerCase() === currentTitle.toLocaleLowerCase()) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`PR title “${currentTitle}” is already clean, not updating.`);
-            return;
-        }
-
-        // Throw a warning if the title is empty now
-        if (properTitle.length === 0) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.warning)(`Could not compute a proper title from current PR title “${currentTitle}”`);
-            return;
-        }
-
-        // Report empty
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Updating PR title to “${properTitle}”...`);
-
-        // Send update to GitHub
-        await octokit.rest.pulls.update({
-            ...prQuery,
-            title: properTitle,
-        });
-    } catch (error) {
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed)(error.message);
-    }
-
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
-}
-
-async function updatePrLabels() {
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.startGroup)("Start updating Labels on PR...");
-        const assignDefaultLabel = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)("label", { required: false });
-
-        if (assignDefaultLabel == "false") {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Skip labeling PR`);
-
-            return;
-        }
-
-        if (!ticketNumber) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`No ticket number found, don't label PR`);
-
-            return;
-        }
-
-        // Fetch labels
-        const labels = await octokit.rest.issues.listLabelsForRepo({
-            owner: prQuery.owner,
-            repo: prQuery.repo,
-        });
-
-        // Find label that starts with the project name
-        const matchingLabelWithTicket = labels.data.find((label) =>
-            label.name.startsWith(ticketNumber.split("-")[0])
-        );
-
-        (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`${labels.data.length} labels found.`);
-
-        // Add label to PR if found
-        if (matchingLabelWithTicket) {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.info)(`Adding label “${matchingLabelWithTicket.name}” to PR...`);
-
-            await octokit.rest.issues.addLabels({
-                owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
-                repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
-                issue_number: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.issue.number,
-                labels: [matchingLabelWithTicket.name],
-            });
-        }
-
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.endGroup)();
-}
-
-updatePrTitle();
-updatePrLabels();
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module used 'module' so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(2932);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
