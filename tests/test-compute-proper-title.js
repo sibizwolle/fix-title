@@ -39,6 +39,18 @@ const testCases = [
         title: 'PROJ-44 - Random test',
         ticketNumber: null,
     },
+    {
+        expected: 'PROJ-44 - Random Test',
+        branch: 'refs/heads/develop',
+        title: 'PROJ-44 - Random test',
+        ticketNumber: null,
+    },
+    {
+        expected: '[SIA-43] Verwijderde Medewerker Kan Via Api Niets',
+        branch: 'refs/heads/develop',
+        title: 'SIA-143-verwijderde-medewerker-kan-via-api-niets',
+        ticketNumber: 'SIA-143',
+    },
 ];
 
 module.exports = () => {
