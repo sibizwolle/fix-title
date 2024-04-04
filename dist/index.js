@@ -192,6 +192,9 @@ const computePrTitle = (branch, title, ticketNumber) => {
     // Convert "proj 10 test stuff" to "test stuff"
     newTitle = removeTicketNumberFromStart(newTitle, ticketNumber);
 
+    // Convert test-stuff-with-a-lot-of-dashes to test stuff with a lot of dashes
+    newTitle = newTitle.replace(/-/g, ' ');
+
     // Convert "test stuff" to "Test Stuff"
     newTitle = newTitle.replace(/(\s+|^)([a-z])/g, (matches) => matches.toUpperCase());
 
@@ -213,6 +216,7 @@ module.exports = computePrTitle;
 /***/ ((module) => {
 
 const branchMatchingRegexp = /^([a-z]{1,8})[_\-\s]?(\d+)\b/i;
+const wrappingMatchingRegexp = /\[([^\]]+)\]/g;
 
 /**
  * Fidns the issue in the branch name or title
@@ -220,8 +224,9 @@ const branchMatchingRegexp = /^([a-z]{1,8})[_\-\s]?(\d+)\b/i;
  * @returns {String|null}
  */
 const findIssueInBranch = (refOrTitle) => {
-    const finalRefPart = String(refOrTitle).split('/').pop();
+    let finalRefPart = String(refOrTitle).split('/').pop();
 
+    finalRefPart = finalRefPart.replace(wrappingMatchingRegexp, '$1');
     const refMatches = branchMatchingRegexp.exec(finalRefPart);
 
     if (refMatches === null) {
