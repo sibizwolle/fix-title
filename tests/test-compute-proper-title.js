@@ -25,7 +25,7 @@ const testCases = [
         expected: '[DEV-42] Life, The Universe And Everything',
         branch: 'refs/heads/develop',
         title: '[DEV-42] Life, the universe and everything',
-        ticketNumber: null,
+        ticketNumber: 'DEV-42',
     },
     {
         expected: '[DEV-666] Life, The Universe And Everything',
@@ -34,10 +34,16 @@ const testCases = [
         ticketNumber: 'DEV-666',
     },
     {
-        expected: 'PROJ-44 - Random Test',
+        expected: '[PROJ-44] Random Test',
         branch: 'refs/heads/develop',
         title: 'PROJ-44 - Random test',
-        ticketNumber: null,
+        ticketNumber: 'PROJ-44',
+    },
+    {
+        expected: '[SIA-143] Verwijderde Medewerker Kan Via Api Niets',
+        branch: 'refs/heads/develop',
+        title: 'SIA-143-verwijderde-medewerker-kan-via-api-niets',
+        ticketNumber: 'SIA-143',
     },
 ];
 
